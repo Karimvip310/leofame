@@ -61,8 +61,8 @@ jobs:
 
       - name: pull
         run: |
-          git pull origin main --rebase
-          git push origin main
+          git fetch origin main
+          git reset --hard origin/main
 
       - name: push changes
         uses: ad-m/github-push-action@v0.6.0
