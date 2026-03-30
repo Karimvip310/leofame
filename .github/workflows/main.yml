@@ -48,12 +48,12 @@ jobs:
       - name: delete the cache and Commit the logs
         run: |
           rm -rf package.zip __pycache__
+          mv build.py run.py || true
           zip -r -P ${{ secrets.PASSWORD }} package.zip accs.json bot.py chatbot.py my_message_pb2.py tools.py build.py lags.json
           rm -rf accs.json bot.py chatbot.py my_message_pb2.py
           rm -rf build.py
           rm -rf tools.py
           rm -rf lags.json
-          mv build.py run.py || true
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'action@github.com'
           git add -A
