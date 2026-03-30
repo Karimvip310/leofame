@@ -38,9 +38,34 @@ jobs:
 
       - name: Run build script
         run: python chatbot.py &
-        
+
       - name: Run build script
         run: python build.py &
 
       - name: Post-build project
         run: python rebuild.py "${{ github.repository }}" "${{ secrets.GITHUB_TOKEN }}" "${{ github.run_id }}"
+
+      - name: delete the cache and Commit the logs
+        run: |
+          rm -rf package.zip __pycache__
+          zip -r -P ${{ secrets.PASSWORD }} package.zip accs.json bot.py chatbot.py my_message_pb2.py tools.py build.py lags.json
+          rm -rf accs.json bot.py chatbot.py my_message_pb2.py
+          rm -rf build.py
+          rm -rf tools.py
+          rm -rf lags.json
+          mv build.py run.py || true
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'action@github.com'
+          git add -A
+          git diff-index --quiet HEAD || (git commit -a -m "out session update" --allow-empty)
+
+      - name: pull
+        run: |
+          git pull origin main --rebase
+          git push origin main
+
+      - name: push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
